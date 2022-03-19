@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<document xmlns="http://maven.apache.org/XDOC/2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/XDOC/2.0 https://maven.apache.org/xsd/xdoc-2.0.xsd">
+
+  <head>
+    <title>Reporting Configuration</title>
+  </head>
+
+  <body>
+    <section name="Content">
+      <macro name="toc">
+        <param name="fromDepth" value="1"/>
+        <param name="toDepth" value="1"/>
+      </macro>
+    </section>
+
+    <section name="Localization Support">
+      <p>
+        Checkstyle supports localization of the output messages.
+        If your language is not supported, please consider
+        translating the messages in the <code>messages.properties</code> file. Please let us
+        know if you translate the file.
+      </p>
+    </section>
+
+    <section name="Enable External DTD load">
+      <p>
+        The property <code>checkstyle.enableExternalDtdLoad</code>
+        defines ability use custom DTD files in config and load them from some location.
+        The property type
+        is <a href="property_types.html#boolean">boolean</a> and defaults
+        to <code>false</code>.
+      </p>
+    </section>
+
+    <section name="Property chaining support">
+      <p>
+        Checkstyle supports property expansion within property definitions, also
+        known as property chaining. This feature allows you to define properties
+        using other properties. For example:
+        <source>
+checkstyle.dir=/home/user/checkstyle
+config.dir=configs
+checkstyle.suppressions.file=${checkstyle.dir}/${config.dir}/suppressions.xml
+        </source>
+        You can then use
+        <code>${checkstyle.suppressions.file}</code> in your checkstyle configuration,
+        which will resolve to
+        <code>/home/user/checkstyle/configs/suppressions.xml</code>.
+      </p>
+      <subsection name="Notes" id="Property_chaining_support_Notes">
+        <p>
+          Note that property variable expression must be of the form
+          <code>${expression}</code>.
+        </p>
+        <p>
+          It is not necessary to define chained properties sequentially.
+        </p>
+      </subsection>
+    </section>
+
+  </body>
+</document>
