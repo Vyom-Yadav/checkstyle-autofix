@@ -360,6 +360,15 @@ public final class Violation
     }
 
     /**
+     * Get the arguments related with the violation
+     *
+     * @return arguments related with the violation
+     */
+    public Object[] getArgs() {
+        return args;
+    }
+
+    /**
      * Sets a locale to use for localization.
      *
      * @param locale the locale to use for localization

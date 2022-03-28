@@ -19,10 +19,21 @@
 
 package com.puppycrawl.tools.checkstyle.checks.whitespace;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.puppycrawl.tools.checkstyle.StatelessCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
+import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
+import com.puppycrawl.tools.checkstyle.api.Violation;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 
 /**
@@ -185,6 +196,35 @@ public class WhitespaceAfterCheck
         }
     }
 
+    @Override
+    public void autofixViolations(SortedSet<Violation> violations, FileContents fileContents)
+        throws IOException {
+        final Path filePath = fileContents.getText().getFile().toPath();
+        try (Stream<String> allLines = Files.lines(filePath)) {
+            List<String> allLinesList = allLines.collect(Collectors.toList());
+            Map<Integer, List<Violation>> lineWiseViolationGroups = violations.stream()
+                .collect(Collectors.groupingBy(Violation::getLineNo));
+            lineWiseViolationGroups.values()
+                .forEach(violationGroup -> {
+                    int columnIncrementCounter = 0;
+                    for (Violation violation : violationGroup) {
+                        final String violationLine = allLinesList.get(violation.getLineNo() - 1);
+                        final int tokenLength = ((String) violation.getArgs()[0]).length();
+
+                        final int columnNumberToModify = violation.getColumnNo() + tokenLength
+                            + columnIncrementCounter - 1;
+
+                        final String modifiedString = violationLine
+                            .substring(0, columnNumberToModify) + " "
+                            + violationLine.substring(columnNumberToModify);
+                        allLinesList.set(violation.getLineNo() - 1, modifiedString);
+                        columnIncrementCounter++;
+                    }
+                });
+            Files.write(filePath, allLinesList);
+        }
+    }
+
     /**
      * Checks whether token is followed by a whitespace.
      *
@@ -206,5 +246,4 @@ public class WhitespaceAfterCheck
         }
         return followedByWhitespace;
     }
-
 }

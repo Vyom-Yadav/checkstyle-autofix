@@ -19,16 +19,23 @@
 
 package com.puppycrawl.tools.checkstyle.checks.whitespace;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.puppycrawl.tools.checkstyle.StatelessCheck;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
+import com.puppycrawl.tools.checkstyle.api.Violation;
 import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
 import com.puppycrawl.tools.checkstyle.utils.JavadocUtil;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
@@ -444,6 +451,46 @@ public class EmptyLineSeparatorCheck extends AbstractCheck {
         }
         if (nextToken != null) {
             checkToken(ast, nextToken);
+        }
+    }
+
+    @Override
+    public void autofixViolations(SortedSet<Violation> violations, FileContents fileContents)
+        throws IOException {
+        final Path filePath = fileContents.getText().getFile().toPath();
+        try (Stream<String> allLines = Files.lines(filePath)) {
+            List<String> allLinesList = allLines.collect(Collectors.toList());
+            int lineIncrementDecrementCounter = 0;
+            for (Violation violation : violations) {
+                final int violationIndex =
+                    violation.getLineNo() + lineIncrementDecrementCounter - 1;
+                switch (violation.getKey()) {
+                    case MSG_SHOULD_BE_SEPARATED:
+                        allLinesList
+                            .set(violationIndex,
+                                 System.lineSeparator() + allLinesList.get(violationIndex));
+                        break;
+                    case MSG_MULTIPLE_LINES:
+                        int lineIndexCausingViolationBefore = violationIndex - 2;
+                        while (allLinesList.get(lineIndexCausingViolationBefore).isEmpty()) {
+                            allLinesList.remove(lineIndexCausingViolationBefore);
+                            lineIndexCausingViolationBefore--;
+                            lineIncrementDecrementCounter--;
+                        }
+                        break;
+                    case MSG_MULTIPLE_LINES_INSIDE:
+                    case MSG_MULTIPLE_LINES_AFTER:
+                        int lineIndexCausingViolationAfter = violationIndex + 2;
+                        while (allLinesList.get(lineIndexCausingViolationAfter).isEmpty()) {
+                            allLinesList.remove(lineIndexCausingViolationAfter);
+                            lineIncrementDecrementCounter--;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            Files.write(filePath, allLinesList);
         }
     }
 

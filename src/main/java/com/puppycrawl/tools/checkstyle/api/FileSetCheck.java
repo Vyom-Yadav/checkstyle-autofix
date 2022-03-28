@@ -20,6 +20,7 @@
 package com.puppycrawl.tools.checkstyle.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.SortedSet;
 
 /**
@@ -72,7 +73,8 @@ public interface FileSetCheck
      * @return the sorted set of violations to be logged.
      * @throws CheckstyleException if error condition within Checkstyle occurs
      */
-    SortedSet<Violation> process(File file, FileText fileText) throws CheckstyleException;
+    SortedSet<Violation> process(File file, FileText fileText) throws CheckstyleException,
+                                                                      IOException;
 
     /**
      * Called when all the files have been processed. This is the time to

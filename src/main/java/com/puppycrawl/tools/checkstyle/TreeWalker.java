@@ -20,6 +20,7 @@
 package com.puppycrawl.tools.checkstyle;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -145,7 +146,8 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
     }
 
     @Override
-    protected void processFiltered(File file, FileText fileText) throws CheckstyleException {
+    protected void processFiltered(File file, FileText fileText) throws CheckstyleException,
+                                                                        IOException {
         // check if already checked and passed the file
         if (!ordinaryChecks.isEmpty() || !commentChecks.isEmpty()) {
             final FileContents contents = getFileContents();
@@ -268,7 +270,7 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
      * @param astState state of AST.
      */
     private void walk(DetailAST ast, FileContents contents,
-            AstState astState) {
+            AstState astState) throws IOException {
         notifyBegin(ast, contents, astState);
         processIter(ast, astState);
         notifyEnd(ast, astState);
@@ -305,7 +307,7 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
      * @param rootAST the root of the tree.
      * @param astState state of AST.
      */
-    private void notifyEnd(DetailAST rootAST, AstState astState) {
+    private void notifyEnd(DetailAST rootAST, AstState astState) throws IOException {
         final Set<AbstractCheck> checks;
 
         if (astState == AstState.WITH_COMMENTS) {
@@ -317,7 +319,12 @@ public final class TreeWalker extends AbstractFileSetCheck implements ExternalRe
 
         for (AbstractCheck check : checks) {
             check.finishTree(rootAST);
-            violations.addAll(check.getViolations());
+            if (check.isAutofixViolations()) {
+                check.autofixViolations(check.getViolations(), getFileContents());
+            }
+            else {
+                violations.addAll(check.getViolations());
+            }
         }
     }
 

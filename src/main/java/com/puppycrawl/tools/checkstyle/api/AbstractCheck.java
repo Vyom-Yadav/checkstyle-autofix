@@ -19,6 +19,7 @@
 
 package com.puppycrawl.tools.checkstyle.api;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,6 +49,9 @@ public abstract class AbstractCheck extends AbstractViolationReporter {
 
     /** The tab width for column reporting. */
     private int tabWidth = CommonUtil.DEFAULT_TAB_WIDTH;
+
+    /** Whether to autofix violations. */
+    private boolean autofixViolations;
 
     /**
      * Returns the default token a check is interested in. Only used if the
@@ -87,6 +91,15 @@ public abstract class AbstractCheck extends AbstractViolationReporter {
     }
 
     /**
+     * Whether violation should be automatically fixed.
+     *
+     * @return {@code true} if violations should be and can be automatically fixed
+     */
+    public boolean isAutofixViolations() {
+        return autofixViolations;
+    }
+
+    /**
      * Adds a set of tokens the check is interested in.
      *
      * @param strRep the string representation of the tokens interested in
@@ -94,6 +107,15 @@ public abstract class AbstractCheck extends AbstractViolationReporter {
      */
     public final void setTokens(String... strRep) {
         Collections.addAll(tokens, strRep);
+    }
+
+    /**
+     * Set whether to autofix violations.
+     *
+     * @param autofixViolations autofixViolations
+     */
+    public void setAutofixViolations(boolean autofixViolations) {
+        this.autofixViolations = autofixViolations;
     }
 
     /**
@@ -306,6 +328,11 @@ public abstract class AbstractCheck extends AbstractViolationReporter {
      */
     public final int[] getLineCodePoints(int index) {
         return getLine(index).codePoints().toArray();
+    }
+
+    public void autofixViolations(SortedSet<Violation> violations, FileContents fileContents)
+        throws IOException {
+        // No code by default
     }
 
     /**
