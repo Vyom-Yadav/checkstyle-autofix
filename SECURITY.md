@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We do not support any old versions, all updates for bugs/features/security
+We do not support sany old versions, all updates for bugs/features/security
 will be released in next planned version.
 
 | Version      | Supported          |
